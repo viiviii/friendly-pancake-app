@@ -18,6 +18,7 @@ void main() {
       home: Center(
         child: Material(
           child: ContentCard(
+            onTap: () {},
             description: description ?? '일본의 한 시골 마을에서 여름을 보내게 된다',
             image: image ?? testImage,
           ),

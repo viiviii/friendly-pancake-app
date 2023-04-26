@@ -4,8 +4,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pancake_app/content_save_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'widgets/content.dart';
+
+typedef ContentSelected<int> = void Function(int contentId);
 
 void main() {
   runApp(const MyApp());
@@ -64,11 +67,26 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<void> _watch(int id) async {
+    final url = Uri.http('localhost:8080');
+
+    final watched = await launchUrl(url.resolve('/api/contents/$id'));
+
+    if (watched) {
+      final response =
+          await http.patch(url.resolve('/api/contents/$id/watched'));
+      assert(response.statusCode == 200, '지금은 귀찮아');
+    }
+
+    _onLoad();
+  }
+
   Future<void> _moveToContentSave() async {
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const ContentSaveScreen()),
     );
+
     _onLoad();
   }
 
@@ -101,6 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               _ContentGridView(
+                onContentTap: _watch,
                 contents: _watchedContents,
               ),
               Padding(
@@ -111,6 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               _ContentGridView(
+                onContentTap: _watch,
                 contents: _unwatchedContents,
               ),
             ],
@@ -124,9 +144,11 @@ class _MyHomePageState extends State<MyHomePage> {
 class _ContentGridView extends StatelessWidget {
   const _ContentGridView({
     Key? key,
+    required this.onContentTap,
     required this.contents,
   }) : super(key: key);
 
+  final ContentSelected<int> onContentTap;
   final List<Content> contents;
 
   @override
@@ -146,6 +168,7 @@ class _ContentGridView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ContentCard(
+              onTap: () => onContentTap(content.id),
               image: NetworkImage(content.imageUrl),
               description: content.description,
             ),

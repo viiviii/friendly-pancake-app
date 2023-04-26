@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 class ContentCard extends StatefulWidget {
   const ContentCard({
     Key? key,
+    required this.onTap,
     required this.image,
     required this.description,
   }) : super(key: key);
 
+  final GestureTapCallback onTap;
   final ImageProvider image;
   final String description;
 
@@ -55,6 +57,7 @@ class _ContentCardState extends State<ContentCard>
 
   Future<void> _handleTap() async {
     await _controller.reverse();
+    widget.onTap();
   }
 
   @override
